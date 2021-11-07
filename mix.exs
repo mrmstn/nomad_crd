@@ -21,10 +21,11 @@ defmodule NomadCrd.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:nomad_client, "~> 0.12.0"},
-      {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
       {:credo, "~> 1.4", only: [:dev, :test], runtime: false},
-      {:dotenvy, "~> 0.5.0", only: [:dev, :test]}
+      {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
+      {:dotenvy, "~> 0.5.0", only: [:dev, :test]},
+      {:nomad_client, "~> 0.12.0"},
+      {:map_diff, "~> 1.3"}
     ]
   end
 end
