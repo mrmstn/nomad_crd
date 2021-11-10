@@ -44,6 +44,7 @@ defmodule NomadCrd.NomadBackend do
   end
 
   defp conn do
+    # TODO: Must be configurable...
     NomadClient.Connection.new()
   end
 

@@ -1,6 +1,7 @@
 defmodule NomadCrd.DiffEngines.TemplateDiffTest do
   use ExUnit.Case
   alias NomadClient.Api.Jobs
+  alias NomadClient.Model
   alias NomadClient.Connection
   alias NomadCrd.DiffEngines.TemplateDiff
   alias NomadCrdTest.Templates.RedisV1
@@ -14,7 +15,7 @@ defmodule NomadCrd.DiffEngines.TemplateDiffTest do
         TaskGroups: [%{Tasks: [%{Config: %{"image" => "redis:6.2.6"}}]}]
       }
 
-      assert expected == TemplateDiff.diff(deployed, RedisV2)
+      assert expected === TemplateDiff.diff(deployed, RedisV2) |> IO.inspect()
     end
 
     test "no changes" do
@@ -44,6 +45,35 @@ defmodule NomadCrd.DiffEngines.TemplateDiffTest do
         Name: "Hallo 2",
         TaskGroups: [%{Tasks: [%{Templates: [%{EmbeddedTmpl: "requirepass Test 2\n"}]}]}]
       }
+
+      assert expected == TemplateDiff.extract_update_patch(t1, t2)
+    end
+
+    test "compare list diffs" do
+      t1 = %{test:  ["a", "b", "c", "e", "f"]}
+      t2 = %{test:  ["a", "c", "d", "f", "g"]}
+
+      expected = %{test: [{:no_change}, {:no_change}, {:no_change}, "d"]}
+
+      assert expected == TemplateDiff.extract_update_patch(t1, t2)
+    end
+
+    test "compare lists with vars" do
+      t1 = %{test:  ["a", "b", "c", "e", "f"]}
+      t2 = %{test:  ["a", "c", "d", {:var, "test"}, "f"]}
+
+      expected = %{test: ["a", "c", "d", {:no_change}, "f"]}
+
+      assert expected == TemplateDiff.extract_update_patch(t1, t2)
+    end
+
+    test "compare lists with structs" do
+      s1 = %Model.Task{User: "pi", Templates: ["Test"]}
+      s2 = %Model.Task{User: "root", Templates: ["Test"]}
+      t1 = %{test:  ["a", "b", s1, "e", "f"]}
+      t2 = %{test:  ["a", s2, "d", {:var, "test"}, "f"]}
+
+      expected = %{test: ["a", "c", "d", {:no_change}, "f"]}
 
       assert expected == TemplateDiff.extract_update_patch(t1, t2)
     end

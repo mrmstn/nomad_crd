@@ -60,7 +60,9 @@ defmodule NomadCrdTest.Templates.RedisV1 do
         ],
         "command" => "redis-server",
         "args" => [
-          "/local/redis.conf"
+          "/local/redis.conf",
+          "--port",
+          "7777"
         ]
       },
       Driver: "docker",

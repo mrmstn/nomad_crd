@@ -1,12 +1,13 @@
 defmodule NomadCrd.MixProject do
   use Mix.Project
 
+  @package_name :nomad_crd
   @source_url "https://github.com/mrmstn/nomad_crd"
   @version "0.1.0"
 
   def project do
     [
-      app: :nomad_crd,
+      app: @package_name,
       version: @version,
       elixir: "~> 1.12",
       config_path: "config/config.exs",
@@ -44,7 +45,6 @@ defmodule NomadCrd.MixProject do
 
   defp package() do
     [
-      name: "nomad_client",
       maintainers: ["Michael Ramstein"],
       files: ~w(lib mix.exs README* LICENSE*),
       licenses: ["Apache-2.0"],

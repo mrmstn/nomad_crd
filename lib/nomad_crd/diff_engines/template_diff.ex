@@ -31,6 +31,20 @@ defmodule NomadCrd.DiffEngines.TemplateDiff do
   end
 
   def extract_update_patch(deployed, template) when is_list(deployed) do
+    # Evaluates if list can be checked with myers
+    myers_check = fn val ->
+      is_binary(val) or is_integer(val) or match?({:var, _}, val) or is_atom(val)
+    end
+
+    if Enum.all?(deployed, myers_check) and Enum.all?(template, myers_check) do
+      IO.inspect(deployed, label: :myer)
+      myers_difference(deployed, template)
+    else
+      hick_hack_diff(deployed, template)
+    end
+  end
+
+  def hick_hack_diff(deployed, template) when is_list(deployed) do
     {_, diff} =
       Enum.reduce(
         deployed,
@@ -49,12 +63,28 @@ defmodule NomadCrd.DiffEngines.TemplateDiff do
     end
   end
 
+  def myers_difference(deployed, template) when is_list(deployed) do
+    deployed
+    |> List.myers_difference(template)
+    |> IO.inspect()
+    |> Enum.reject(fn {type, _} -> type in [:del] end)
+    |> Enum.flat_map(fn
+      {:eq, val} -> val
+      {:ins, val} -> val
+    end)
+    |> List.flatten()
+    |> Enum.map(fn
+      {:var, _} -> {:no_change}
+      val -> val
+    end)
+  end
+
   def extract_update_patch(deployed, template) do
     MapDiff.diff(deployed, template)
     |> handle_diff()
   end
 
-  def handle_diff(%{value: diff}) do
+  def handle_diff(%{value: diff}) when is_map(diff) do
     Enum.filter(diff, fn
       # Empty Lists will be nulled by nomad
       {_, %{added: [], changed: :primitive_change, removed: nil}} -> false
@@ -77,6 +107,10 @@ defmodule NomadCrd.DiffEngines.TemplateDiff do
       end
     end)
     |> Map.new()
+  end
+
+  def handle_diff(%{changed: :equal}) do
+    {:no_change}
   end
 
   def handle_diff(%{added: added, changed: :primitive_change}) do
