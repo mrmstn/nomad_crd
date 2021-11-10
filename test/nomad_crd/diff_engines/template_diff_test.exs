@@ -73,7 +73,7 @@ defmodule NomadCrd.DiffEngines.TemplateDiffTest do
       t1 = %{test:  ["a", "b", s1, "e", "f"]}
       t2 = %{test:  ["a", s2, "d", {:var, "test"}, "f"]}
 
-      expected = %{test: ["a", "c", "d", {:no_change}, "f"]}
+      expected = %{test: ["a", %{User: "root"}, "d", {:no_change}, "f"]}
 
       assert expected == TemplateDiff.extract_update_patch(t1, t2)
     end
