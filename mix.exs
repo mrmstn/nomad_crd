@@ -6,6 +6,8 @@ defmodule NomadCrd.MixProject do
       app: :nomad_crd,
       version: "0.1.0",
       elixir: "~> 1.12",
+      config_path: "config/config.exs",
+      elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       deps: deps()
     ]
@@ -25,7 +27,12 @@ defmodule NomadCrd.MixProject do
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
       {:dotenvy, "~> 0.5.0", only: [:dev, :test]},
       {:nomad_client, "~> 0.12.0"},
+      {:hackney, "~> 1.13"},
       {:map_diff, "~> 1.3"}
     ]
   end
+
+  # Specifies which paths to compile per environment.
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib"]
 end

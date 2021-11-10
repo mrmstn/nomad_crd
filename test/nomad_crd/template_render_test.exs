@@ -1,8 +1,7 @@
 defmodule NomadCrd.TemplateRenderTest do
   use ExUnit.Case
   alias NomadClient.Api.Jobs
-  alias NomadClient.Connection
-  alias NomadCrd.Templates.RedisTempalte
+  alias NomadCrdTest.Templates.RedisV2
 
   @tag :external
   test "build_template" do
@@ -35,7 +34,7 @@ defmodule NomadCrd.TemplateRenderTest do
               Templates: [
                 %NomadClient.Model.Template{
                   DestPath: "local/redis.conf",
-                  EmbeddedTmpl: "requirepass %{vars.password}\n",
+                  EmbeddedTmpl: "requirepass password\n",
                   Envvars: false
                 }
               ]
@@ -45,6 +44,6 @@ defmodule NomadCrd.TemplateRenderTest do
       ]
     }
 
-    assert expected == NomadCrd.TemplateRender.render(RedisTempalte, variables)
+    assert expected == NomadCrd.TemplateRender.render(RedisV2, variables)
   end
 end

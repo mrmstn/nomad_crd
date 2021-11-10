@@ -26,8 +26,6 @@ defmodule NomadCrd.TemplateRender do
     {key, map_entry(value, variables)}
   end
 
-  def parse_entry({key, nil}, _variables), do: {key, nil}
-
   defp map_entry({:var, var}, variables) when is_atom(var) do
     Map.get(variables, var)
   end
@@ -50,7 +48,7 @@ defmodule NomadCrd.TemplateRender do
     render_list(list, variables)
   end
 
-  defp map_entry(value, variables) when is_binary(value) or is_nil(value) or is_boolean(value) do
+  defp map_entry(value, _variables) when is_binary(value) or is_nil(value) or is_boolean(value) do
     value
   end
 end

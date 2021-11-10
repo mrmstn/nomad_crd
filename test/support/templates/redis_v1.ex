@@ -1,17 +1,20 @@
-defmodule NomadCrd.Templates.RedisTempalte do
+defmodule NomadCrdTest.Templates.RedisV1 do
   alias NomadClient.Model
   alias NomadClient.Model.Job
 
-  def name(), do: "redis-spec"
+  @behaviour NomadCrd.Template
 
-  def variables() do
+  def name, do: "redis-spec"
+
+  def variables do
     [
       :id,
       :password
     ]
   end
 
-  def template() do
+  @spec template :: NomadClient.Model.Job.t()
+  def template do
     %Job{
       Datacenters: ["dc1"],
       ID: {:var, :id},
@@ -22,7 +25,7 @@ defmodule NomadCrd.Templates.RedisTempalte do
     }
   end
 
-  defp build_task_group() do
+  defp build_task_group do
     %Model.TaskGroup{
       Name: "cache",
       Services: [],
@@ -32,10 +35,10 @@ defmodule NomadCrd.Templates.RedisTempalte do
     }
   end
 
-  defp build_task() do
+  defp build_task do
     embedded_tmpl = fn vars ->
       """
-      requirepass %{vars.password}
+      requirepass #{vars.password}
       """
     end
 
@@ -47,7 +50,7 @@ defmodule NomadCrd.Templates.RedisTempalte do
 
     %Model.Task{
       Config: %{
-        "image" => "redis:6.2.6",
+        "image" => "redis:6.0.16",
         "mount" => [
           %{
             "type" => "bind",
