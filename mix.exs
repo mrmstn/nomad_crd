@@ -1,14 +1,19 @@
 defmodule NomadCrd.MixProject do
   use Mix.Project
 
+  @source_url "https://github.com/mrmstn/nomad_crd"
+  @version "0.1.0"
+
   def project do
     [
       app: :nomad_crd,
-      version: "0.1.0",
+      version: @version,
       elixir: "~> 1.12",
       config_path: "config/config.exs",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
+      package: package(),
+      description: "A Resource Manager for HashiCorp Nomad.",
       deps: deps()
     ]
   end
@@ -26,13 +31,24 @@ defmodule NomadCrd.MixProject do
       {:credo, "~> 1.4", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
       {:dotenvy, "~> 0.5.0", only: [:dev, :test]},
-      {:nomad_client, "~> 0.12.0"},
-      {:hackney, "~> 1.13"},
-      {:map_diff, "~> 1.3"}
+      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
+      {:hackney, "~> 1.13", only: [:dev, :test]},
+      {:map_diff, "~> 1.3"},
+      {:nomad_client, "~> 0.12.0"}
     ]
   end
 
   # Specifies which paths to compile per environment.
   defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
+
+  defp package() do
+    [
+      name: "nomad_client",
+      maintainers: ["Michael Ramstein"],
+      files: ~w(lib mix.exs README* LICENSE*),
+      licenses: ["Apache-2.0"],
+      links: %{"GitHub" => @source_url}
+    ]
+  end
 end
