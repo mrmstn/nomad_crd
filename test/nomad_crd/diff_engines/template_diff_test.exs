@@ -50,19 +50,19 @@ defmodule NomadCrd.DiffEngines.TemplateDiffTest do
     end
 
     test "compare list diffs" do
-      t1 = %{test:  ["a", "b", "c", "e", "f"]}
-      t2 = %{test:  ["a", "c", "d", "f", "g"]}
+      t1 = %{test: ["a", "b", "c", "e", "f"]}
+      t2 = %{test: ["a", "c", "d", "f", "g"]}
 
-      expected = %{test: [{:no_change}, {:no_change}, {:no_change}, "d"]}
+      expected = %{test: [{:no_change}, {:del, ["b"]}, {:no_change}, {:del, ["e"]}, {:ins, ["d"]}, {:no_change}, {:ins, ["g"]}]}
 
       assert expected == TemplateDiff.extract_update_patch(t1, t2)
     end
 
     test "compare lists with vars" do
-      t1 = %{test:  ["a", "b", "c", "e", "f"]}
-      t2 = %{test:  ["a", "c", "d", {:var, "test"}, "f"]}
+      t1 = %{test: ["a", "b", "c", "e", "f"]}
+      t2 = %{test: ["a", "c", "d", {:var, "test"}, "f"]}
 
-      expected = %{test: ["a", "c", "d", {:no_change}, "f"]}
+      expected = %{test: [{:no_change}, {:del, ["b"]}, {:no_change}, {:ins, ["d"]}, {:no_change}, {:no_change}]}
 
       assert expected == TemplateDiff.extract_update_patch(t1, t2)
     end
@@ -70,10 +70,10 @@ defmodule NomadCrd.DiffEngines.TemplateDiffTest do
     test "compare lists with structs" do
       s1 = %Model.Task{User: "pi", Templates: ["Test"]}
       s2 = %Model.Task{User: "root", Templates: ["Test"]}
-      t1 = %{test:  ["a", "b", s1, "e", "f"]}
-      t2 = %{test:  ["a", s2, "d", {:var, "test"}, "f"]}
+      t1 = %{test: ["a", "b", s1, "e", "f"]}
+      t2 = %{test: ["a", s2, "d", {:var, "test"}, "f"]}
 
-      expected = %{test: ["a", %{User: "root"}, "d", {:no_change}, "f"]}
+      expected = %{test: [{:no_change}, {:del, ["b"]}, %{User: "root"}, {:ins, ["d"]}, {:no_change}, {:no_change}]}
 
       assert expected == TemplateDiff.extract_update_patch(t1, t2)
     end

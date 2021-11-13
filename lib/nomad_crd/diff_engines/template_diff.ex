@@ -30,58 +30,51 @@ defmodule NomadCrd.DiffEngines.TemplateDiff do
     Map.update(acc, key, value, fn source -> Enum.reduce(value, source, &apply_patch/2) end)
   end
 
-  def extract_update_patch(deployed, template) when is_list(deployed) do
-    # Evaluates if list can be checked with myers
-    myers_check = fn val ->
-      is_binary(val) or is_integer(val) or match?({:var, _}, val) or is_atom(val)
-    end
+  def extract_update_patch(deployed, template) when is_list(deployed) and is_list(template) do
+    list_diff =
+      deployed
+      |> List.myers_difference(template, fn
+        %{} = p1, %{} = p2 -> extract_update_patch(p1, p2)
+        _, {:var, _} -> {:no_change}
+        _, _ -> nil
+      end)
+      |> Enum.reduce([], &handle_myer_diff/2)
+      |> Enum.reverse()
 
-    if Enum.all?(deployed, myers_check) and Enum.all?(template, myers_check) do
-      IO.inspect(deployed, label: :myer)
-      myers_difference(deployed, template)
+    all_unchanged? =
+      list_diff
+      |> Enum.all?(fn
+        {:no_change} -> true
+        element -> element === %{}
+      end)
+
+    if all_unchanged? do
+      {:no_change}
     else
-      hick_hack_diff(deployed, template)
+      list_diff
     end
-  end
-
-  def hick_hack_diff(deployed, template) when is_list(deployed) do
-    {_, diff} =
-      Enum.reduce(
-        deployed,
-        {template, []},
-        fn entry, {[tpl_entry | tail], diff_list} ->
-          diff = extract_update_patch(entry, tpl_entry)
-          {tail, [diff | diff_list]}
-        end
-      )
-
-    # Returns unchanged list as nil, since empty list could be wrongly interpreted
-    if Enum.all?(diff, &(&1 == %{})) do
-      nil
-    else
-      Enum.reverse(diff)
-    end
-  end
-
-  def myers_difference(deployed, template) when is_list(deployed) do
-    deployed
-    |> List.myers_difference(template)
-    |> IO.inspect()
-    |> Enum.reject(fn {type, _} -> type in [:del] end)
-    |> Enum.flat_map(fn
-      {:eq, val} -> val
-      {:ins, val} -> val
-    end)
-    |> List.flatten()
-    |> Enum.map(fn
-      {:var, _} -> {:no_change}
-      val -> val
-    end)
   end
 
   def extract_update_patch(deployed, template) do
     MapDiff.diff(deployed, template)
     |> handle_diff()
+  end
+
+  def handle_myer_diff({:ins, elements}, acc) do
+    [{:ins, elements} | acc]
+  end
+
+  def handle_myer_diff({:del, elements}, acc) do
+    [{:del, elements} | acc]
+  end
+
+  def handle_myer_diff({:eq, elements}, acc) do
+    elements
+    |> Enum.reduce(acc, fn _, acc -> [{:no_change} | acc] end)
+  end
+
+  def handle_myer_diff({:diff, element}, acc) do
+    [element | acc]
   end
 
   def handle_diff(%{value: diff}) when is_map(diff) do
@@ -102,7 +95,8 @@ defmodule NomadCrd.DiffEngines.TemplateDiff do
       update_patch = extract_update_patch(removed, added)
 
       case update_patch do
-        nil -> acc
+        # nil -> acc
+        {:no_change} -> acc
         _ -> [{key, update_patch} | acc]
       end
     end)
