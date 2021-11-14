@@ -10,7 +10,7 @@ by adding `nomad_crd` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:nomad_crd, "~> 0.1.0"}
+    {:nomad_crd, "~> 0.1.1"}
   ]
 end
 ```
