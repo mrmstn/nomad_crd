@@ -1,6 +1,5 @@
 defmodule NomadCrdTest do
   use ExUnit.Case
-  alias NomadClient.Connection
   alias NomadClient.Model
   alias NomadCrdTest.Templates.RedisV1
 
@@ -31,6 +30,6 @@ defmodule NomadCrdTest do
       password: password
     }
 
-    job = @rendering.render(template, variables)
+    @rendering.render(template, variables)
   end
 end

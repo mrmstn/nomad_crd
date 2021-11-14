@@ -1,6 +1,5 @@
 defmodule NomadCrd.TemplateRenderTest do
   use ExUnit.Case
-  alias NomadClient.Api.Jobs
   alias NomadCrdTest.Templates.RedisV2
 
   @tag :external

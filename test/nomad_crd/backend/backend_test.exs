@@ -1,8 +1,6 @@
 defmodule NomadCrd.BackendTest do
   use ExUnit.Case
 
-  alias NomadClient.Api.Jobs
-  alias NomadClient.Connection
   alias NomadClient.Model
   alias NomadCrd.DiffEngines.TemplateDiff
   alias NomadCrdTest.Templates.RedisV1

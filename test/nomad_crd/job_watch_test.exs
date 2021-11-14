@@ -1,7 +1,5 @@
 defmodule NomadCrd.JobWatchTest do
   use ExUnit.Case
-  alias NomadClient.Api.Jobs
-  alias NomadClient.Connection
   alias NomadCrd.DiffEngines.TemplateDiff
   alias NomadCrdTest.Templates.RedisV1
   alias NomadCrdTest.Templates.RedisV2
