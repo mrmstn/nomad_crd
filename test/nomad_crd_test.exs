@@ -19,7 +19,7 @@ defmodule NomadCrdTest do
     initial_job = init_template(template)
     {:ok, %Model.Job{} = deployed_job} = @backend.create_job(initial_job)
 
-    assert %{} == @diff_engine.diff(deployed_job, template)
+    assert %{} === @diff_engine.diff(deployed_job, template)
   end
 
   defp init_template(template) do

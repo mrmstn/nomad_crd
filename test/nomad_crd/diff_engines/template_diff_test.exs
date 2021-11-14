@@ -33,6 +33,39 @@ defmodule NomadCrd.DiffEngines.TemplateDiffTest do
 
       assert expected == TemplateDiff.patch(deployed, patch)
     end
+
+    test "list patch" do
+      deployed = get_deployed_example(RedisV1)
+
+      patch = %{
+        TaskGroups: [
+          %{Tasks: [%{Config: %{"args" => [{:no_change}, {:ins, ["--port", "7777"]}]}}]}
+        ]
+      }
+
+      expected = patched_deployment()
+
+      assert expected == TemplateDiff.patch(deployed, patch)
+    end
+
+    test "ins - del - no_change" do
+      deployed = %{test: ["a", "b", "c", "e", "f"]}
+
+      patch = %{
+        test: [
+          {:no_change},
+          {:del, ["b"]},
+          {:no_change},
+          {:del, ["e"]},
+          {:ins, ["d"]},
+          {:no_change},
+          {:ins, ["g"]}
+        ]
+      }
+
+      expected = %{test: ["a", "c", "d", "f", "g"]}
+      assert expected == TemplateDiff.patch(deployed, patch)
+    end
   end
 
   describe "extract_update_patch/2" do
@@ -53,7 +86,17 @@ defmodule NomadCrd.DiffEngines.TemplateDiffTest do
       t1 = %{test: ["a", "b", "c", "e", "f"]}
       t2 = %{test: ["a", "c", "d", "f", "g"]}
 
-      expected = %{test: [{:no_change}, {:del, ["b"]}, {:no_change}, {:del, ["e"]}, {:ins, ["d"]}, {:no_change}, {:ins, ["g"]}]}
+      expected = %{
+        test: [
+          {:no_change},
+          {:del, ["b"]},
+          {:no_change},
+          {:del, ["e"]},
+          {:ins, ["d"]},
+          {:no_change},
+          {:ins, ["g"]}
+        ]
+      }
 
       assert expected == TemplateDiff.extract_update_patch(t1, t2)
     end
@@ -62,7 +105,16 @@ defmodule NomadCrd.DiffEngines.TemplateDiffTest do
       t1 = %{test: ["a", "b", "c", "e", "f"]}
       t2 = %{test: ["a", "c", "d", {:var, "test"}, "f"]}
 
-      expected = %{test: [{:no_change}, {:del, ["b"]}, {:no_change}, {:ins, ["d"]}, {:no_change}, {:no_change}]}
+      expected = %{
+        test: [
+          {:no_change},
+          {:del, ["b"]},
+          {:no_change},
+          {:ins, ["d"]},
+          {:no_change},
+          {:no_change}
+        ]
+      }
 
       assert expected == TemplateDiff.extract_update_patch(t1, t2)
     end
@@ -73,7 +125,16 @@ defmodule NomadCrd.DiffEngines.TemplateDiffTest do
       t1 = %{test: ["a", "b", s1, "e", "f"]}
       t2 = %{test: ["a", s2, "d", {:var, "test"}, "f"]}
 
-      expected = %{test: [{:no_change}, {:del, ["b"]}, %{User: "root"}, {:ins, ["d"]}, {:no_change}, {:no_change}]}
+      expected = %{
+        test: [
+          {:no_change},
+          {:del, ["b"]},
+          %{User: "root"},
+          {:ins, ["d"]},
+          {:no_change},
+          {:no_change}
+        ]
+      }
 
       assert expected == TemplateDiff.extract_update_patch(t1, t2)
     end

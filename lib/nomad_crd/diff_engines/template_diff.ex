@@ -14,6 +14,19 @@ defmodule NomadCrd.DiffEngines.TemplateDiff do
     []
   end
 
+  def patch_list(source, [{:ins, elemets} | patch_t]) do
+    elemets ++ patch_list(source, patch_t)
+  end
+
+  def patch_list(source, [{:del, elemets} | patch_t]) do
+    source = Enum.drop(source, Enum.count(elemets))
+    patch_list(source, patch_t)
+  end
+
+  def patch_list([source_h | source_t], [{:no_change} | patch_t]) do
+    [source_h | patch_list(source_t, patch_t)]
+  end
+
   def patch_list([source_h | source_t], [patch_h | patch_t]) do
     [patch(source_h, patch_h) | patch_list(source_t, patch_t)]
   end
