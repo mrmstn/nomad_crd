@@ -13,6 +13,7 @@ defmodule NomadCrdTest do
     assert NomadCrd.hello() == :world
   end
 
+  @tag :external
   test "Full Flow Test" do
     template = RedisV1
     initial_job = init_template(template)

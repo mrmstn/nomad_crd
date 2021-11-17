@@ -2,7 +2,6 @@ defmodule NomadCrd.TemplateRenderTest do
   use ExUnit.Case
   alias NomadCrdTest.Templates.RedisV2
 
-  @tag :external
   test "build_template" do
     id = "test-id"
     password = "password"

@@ -9,6 +9,7 @@ defmodule NomadCrd.BackendTest do
   @rendering NomadCrd.TemplateRender
   @diff_engine NomadCrd.DiffEngines.TemplateDiff
 
+  @tag :external
   test "flow" do
     init_job = get_job()
 
