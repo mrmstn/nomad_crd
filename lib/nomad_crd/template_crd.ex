@@ -33,8 +33,6 @@ defmodule NomadCrd.TemplateCrd do
 
     name = Keyword.get(opts, :name, state.template)
 
-    IO.inspect(opts, label: "CRD Name")
-
     GenServer.start_link(__MODULE__, state, name: name)
   end
 
@@ -52,6 +50,10 @@ defmodule NomadCrd.TemplateCrd do
 
   def update_all(pid) do
     GenServer.call(pid, {:update, :all}, 60_000)
+  end
+
+  def get_jobs(pid) do
+    GenServer.call(pid, :get_jobs)
   end
 
   # Server (callbacks)
@@ -90,6 +92,12 @@ defmodule NomadCrd.TemplateCrd do
       |> Map.new()
 
     {:reply, diff, state}
+  end
+
+  def handle_call(:get_jobs, _from, %State{delta: delta} = state) do
+    jobs = Enum.map(delta, fn {_id, {job, _delta}} -> job end)
+
+    {:reply, jobs, state}
   end
 
   def handle_call({:update, :all}, _from, %State{delta: delta} = state) do

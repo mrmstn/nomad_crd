@@ -109,6 +109,20 @@ defmodule NomadCrd.TemplateCrdTest do
     assert full_diff === %{"filter-prefix" => dirty_diff, "excluded-job" => dirty_diff}
   end
 
+  test "get_jobs", %{pid: pid} do
+    alias NomadClient.Model.Job
+
+    {:ok, job} = deploy_dirty_job("existing-job")
+    job_id = Map.get(job, :ID)
+
+    jobs = TemplateCrd.get_jobs(pid)
+
+    assert Enum.any?(jobs, fn
+             %Job{ID: ^job_id} -> true
+             _ -> false
+           end)
+  end
+
   defp deploy_dirty_job(nil) do
     id = Faker.String.base64(8)
     deploy_dirty_job("dirty-" <> id)
