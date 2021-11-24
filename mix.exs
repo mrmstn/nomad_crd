@@ -3,7 +3,7 @@ defmodule NomadCrd.MixProject do
 
   @package_name :nomad_crd
   @source_url "https://github.com/mrmstn/nomad_crd"
-  @version "0.1.2"
+  @version "0.1.3"
 
   def project do
     [
