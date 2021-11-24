@@ -3,7 +3,7 @@ defmodule NomadCrd.MixProject do
 
   @package_name :nomad_crd
   @source_url "https://github.com/mrmstn/nomad_crd"
-  @version "0.1.1"
+  @version "0.1.2"
 
   def project do
     [
@@ -34,6 +34,7 @@ defmodule NomadCrd.MixProject do
       {:dotenvy, "~> 0.5.0", only: [:dev, :test]},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:hackney, "~> 1.13", only: [:dev, :test]},
+      {:faker, "~> 0.16.0", only: :test},
       {:map_diff, "~> 1.3"},
       {:nomad_client, "~> 0.12.0"}
     ]

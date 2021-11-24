@@ -25,7 +25,38 @@ defmodule NomadCrd.NomadBackend do
     |> handle_response()
   end
 
-  defp handle_response({:ok, %Model.JobRegisterResponse{EvalID: eval_id}}) do
+  def delete_job(job_id) do
+    conn = conn()
+
+    Api.Jobs.stop_job(conn, job_id)
+    |> handle_response()
+  end
+
+  def get_jobs do
+    conn = conn()
+
+    {:ok, job_stubs} = Api.Jobs.get_jobs(conn)
+
+    jobs = Enum.map(job_stubs, &complete_job_stub/1)
+
+    {:ok, jobs}
+  end
+
+  def get_job(job_id) do
+    conn = conn()
+
+    Api.Jobs.get_job(conn, job_id)
+  end
+
+  defp complete_job_stub(%Model.JobListStub{ID: id}) do
+    conn = conn()
+
+    {:ok, job} = Api.Jobs.get_job(conn, id)
+    job
+  end
+
+  defp handle_response({:ok, %{__struct__: struct, EvalID: eval_id}})
+       when struct in [Model.JobRegisterResponse, Model.JobDeregisterResponse] do
     conn = conn()
 
     {:ok, %Model.Evaluation{} = eval} = wait_for_deployment_id(eval_id, 5_000)

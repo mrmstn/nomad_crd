@@ -7,7 +7,7 @@ defmodule NomadCrd.BackendTest do
 
   @backend NomadCrd.NomadBackend
   @rendering NomadCrd.TemplateRender
-  @diff_engine NomadCrd.DiffEngines.TemplateDiff
+  # @diff_engine NomadCrd.DiffEngines.TemplateDiff
 
   @tag :external
   test "flow" do
