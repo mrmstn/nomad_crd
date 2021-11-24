@@ -7,7 +7,8 @@ defmodule NomadCrd.TemplateCrd do
       :rendering,
       :diff_engine,
       :template,
-      :delta
+      :delta,
+      :job_filter_fn
     ]
 
     @type t :: %__MODULE__{
@@ -15,24 +16,24 @@ defmodule NomadCrd.TemplateCrd do
             :rendering => NomadCrd.TemplateRender,
             :diff_engine => NomadCrd.DiffEngines.TemplateDiff,
             :template => NomadCrd.Template,
-            :delta => %{optional(any) => {NomadClient.Model.Job.t(), map()}}
+            :delta => %{optional(any) => {NomadClient.Model.Job.t(), map()}},
+            :job_filter_fn => (NomadClient.Model.Job.t() -> true | false) | nil
           }
   end
 
   @spec start_link(keyword) :: :ignore | {:error, any} | {:ok, pid}
   def start_link(opts) when is_list(opts) do
-    backend = Keyword.fetch!(opts, :backend)
-    template = Keyword.fetch!(opts, :template)
-    rendering = Keyword.get(opts, :rendering, NomadCrd.TemplateRender)
-    diff_engine = Keyword.get(opts, :diff_engine, NomadCrd.DiffEngines.TemplateDiff)
-    name = Keyword.get(opts, :name, template)
-
     state = %State{
-      backend: backend,
-      rendering: rendering,
-      diff_engine: diff_engine,
-      template: template
+      backend: Keyword.fetch!(opts, :backend),
+      rendering: Keyword.get(opts, :rendering, NomadCrd.TemplateRender),
+      diff_engine: Keyword.get(opts, :diff_engine, NomadCrd.DiffEngines.TemplateDiff),
+      template: Keyword.fetch!(opts, :template),
+      job_filter_fn: Keyword.get(opts, :job_filter_fn, nil)
     }
+
+    name = Keyword.get(opts, :name, state.template)
+
+    IO.inspect(opts, label: "CRD Name")
 
     GenServer.start_link(__MODULE__, state, name: name)
   end
@@ -133,7 +134,7 @@ defmodule NomadCrd.TemplateCrd do
   defp load_delta(%State{} = state) do
     alias NomadClient.Model.Job
 
-    {:ok, jobs} = state.backend.get_jobs()
+    {:ok, jobs} = get_suitable_jobs(state)
 
     delta =
       jobs
@@ -147,6 +148,14 @@ defmodule NomadCrd.TemplateCrd do
       |> Map.new()
 
     %{state | delta: delta}
+  end
+
+  defp get_suitable_jobs(%State{job_filter_fn: nil} = state), do: state.backend.get_jobs()
+
+  defp get_suitable_jobs(%State{job_filter_fn: filter_fn} = state) do
+    {:ok, jobs} = state.backend.get_jobs()
+    jobs = Enum.filter(jobs, filter_fn)
+    {:ok, jobs}
   end
 
   defp invalidate_delta(%State{} = state), do: %{state | delta: nil}

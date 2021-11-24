@@ -77,6 +77,38 @@ defmodule NomadCrd.TemplateCrdTest do
     assert %{} == TemplateCrd.get_diff(pid)
   end
 
+  test "filter", %{pid: pid} do
+    alias NomadClient.Model.Job
+
+    template = RedisV2
+    ref = RedisV2.Filtered
+    filter_prefix = "filter-prefix"
+
+    opts = [
+      backend: @backend,
+      rendering: NomadCrd.TemplateRender,
+      diff_engine: NomadCrd.DiffEngines.TemplateDiff,
+      template: RedisV2,
+      job_filter_fn: fn %Job{ID: id} -> String.starts_with?(id, filter_prefix) end,
+      name: ref
+    ]
+
+    spec = NomadCrd.TemplateCrd.child_spec(opts)
+
+    {:ok, filter_pid} = start_supervised(%{spec | id: ref})
+
+    {:ok, _job} = deploy_dirty_job(filter_prefix)
+    {:ok, _job} = deploy_dirty_job("excluded-job")
+
+    full_diff = TemplateCrd.get_diff(pid)
+    filtered_diff = TemplateCrd.get_diff(filter_pid)
+
+    dirty_diff = dirty_job_diff(template)
+
+    assert filtered_diff === %{"filter-prefix" => dirty_diff}
+    assert full_diff === %{"filter-prefix" => dirty_diff, "excluded-job" => dirty_diff}
+  end
+
   defp deploy_dirty_job(nil) do
     id = Faker.String.base64(8)
     deploy_dirty_job("dirty-" <> id)
