@@ -31,12 +31,12 @@ defmodule NomadCrd.MixProject do
     [
       {:credo, "~> 1.4", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
-      {:dotenvy, "~> 0.5.0", only: [:dev, :test]},
+      {:dotenvy, "~> 0.5", only: [:dev, :test]},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:hackney, "~> 1.13", only: [:dev, :test]},
-      {:faker, "~> 0.16.0", only: :test},
+      {:faker, "~> 0.17", only: :test},
       {:map_diff, "~> 1.3"},
-      {:nomad_client, "~> 0.12.0"}
+      {:nomad_client, "~> 0.13"}
     ]
   end
 

@@ -7,7 +7,7 @@ defmodule NomadCrd.NomadBackend do
 
   @spec create_job(%Model.Job{}) :: {:ok, %Model.Job{}}
   def create_job(%Model.Job{} = job) do
-    payload = %Model.RegisterJobRequest{Job: job}
+    payload = %Model.JobRegisterRequest{Job: job}
     conn = conn()
 
     conn
@@ -19,16 +19,16 @@ defmodule NomadCrd.NomadBackend do
     conn = conn()
 
     job_update = Map.put(job_update, :ID, job_id)
-    payload = %Model.RegisterJobRequest{Job: job_update}
+    payload = %Model.JobRegisterRequest{Job: job_update}
 
-    Api.Jobs.update_job(conn, job_id, payload)
+    Api.Jobs.post_job(conn, job_id, payload)
     |> handle_response()
   end
 
   def delete_job(job_id) do
     conn = conn()
 
-    Api.Jobs.stop_job(conn, job_id)
+    Api.Jobs.delete_job(conn, job_id)
     |> handle_response()
   end
 
